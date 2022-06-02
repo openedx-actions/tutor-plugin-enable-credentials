@@ -1,0 +1,67 @@
+#------------------------------------------------------------------------------
+# usage: Use tutor to enable the Open edX Credentials service plugin
+#------------------------------------------------------------------------------
+name: enable Credentials plugin for tutor
+description: Github Action to install and enable the Tutor plugin - Open edX Credentials service
+branding:
+  icon: 'cloud'
+  color: 'orange'
+inputs:
+  namespace:
+    description: 'The Kubernetes namesapce to which the Open edX platform environment will be deployed. Example: openedx-prod'
+    required: true
+    type: string
+  aws-ecr-uri:
+    description: 'The URI for the AWS ECR repository. Example: 621672204142.dkr.ecr.us-east-2.amazonaws.com/openedx_credentials:latest'
+    required: true
+    type: string
+  common-logo-url:
+    description: 'Example: https://www.edx.org/images/logos/edx-logo-elm.svg'
+    required: true
+    type: string
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v3.0.2
+
+    # retrieve the MySQL connection parameters that we created in Terraform
+    # and then stored in Kubernetes secrets. These include:
+    #   MYSQL_HOST: mysql.app.mrionline.com
+    #   MYSQL_PORT: "3306"
+    #   OPENEDX_MYSQL_USERNAME: openedx
+    #   OPENEDX_MYSQL_PASSWORD: **************
+    #   MYSQL_ROOT_USERNAME: root
+    #   MYSQL_ROOT_PASSWORD: *************
+    #
+    # Also note that we are using jq to add a prefix of "TUTOR_" to each of the parameter names
+    #
+    # see: https://github.com/Medality-Health/openedx_devops/blob/main/terraform/modules/mysql/main.tf
+    - name: fetch MySQL configuration from Kubernetes secrets
+      run: |-
+        kubectl get secret mysql-credentials -n ${{ inputs.namespace }}  -o json | jq  '.data | map_values(@base64d)' | jq -r 'keys[] as $k | "TUTOR_\($k|ascii_upcase)=\(.[$k])"' >> $GITHUB_ENV
+      shell: bash
+
+    # IMPORTANT: you must run tutor_build_credentials first.
+    - name: Enable and configure credentials plugin
+      run: |-
+        pip install git+https://github.com/lpm0073/tutor-contrib-credentials@v13.0.2
+        tutor plugins enable credentials
+        tutor config save --set CREDENTIALS_DOCKER_IMAGE=${{ inputs.aws-ecr-uri }} \
+                          --set CREDENTIALS_HOST="credentials.${LMS_HOSTNAME}" \
+                          --set CREDENTIALS_LMS_HOST=${LMS_HOSTNAME} \
+                          --set CREDENTIALS_LMS_URL_ROOT=${LMS_HOSTNAME} \
+                          --set CREDENTIALS_LMS_URL=${LMS_HOSTNAME} \
+                          --set CREDENTIALS_CATALOG_API_URL=${LMS_HOSTNAME} \
+                          --set CREDENTIALS_PRIVACY_POLICY_URL="${LMS_HOSTNAME}/pricacy-policy" \
+                          --set CREDENTIALS_SECRET_KEY="${TUTOR_OPENEDX_SECRET_KEY}" \
+                          --set CREDENTIALS_SITE_NAME="Your School" \
+                          --set CREDENTIALS_TOS_URL="${LMS_HOSTNAME}/tos" \
+                          --set CREDENTIALS_LOGO_URL="${{ inputs.common-logo-url }}" \
+                          --set CREDENTIALS_LOGO_URL_PNG="${{ inputs.common-logo-url }}" \
+                          --set CREDENTIALS_LOGO_URL_SVG="" \
+                          --set CREDENTIALS_LOGO_WHITE_URL="${{ inputs.common-logo-url }}" \
+                          --set CREDENTIALS_LOGO_WHITE_URL_PNG="${{ inputs.common-logo-url }}" \
+                          --set CREDENTIALS_LOGO_WHITE_URL_SVG="" \
+                          --set CREDENTIALS_FAVICON_URL="${{ inputs.common-logo-url }}" \
+      shell: bash
