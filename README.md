@@ -39,26 +39,26 @@ jobs:
           aws-secret-access-key: ${{ secrets.THE_NAME_OF_YOUR_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
 
-    - name: Install and configure kubectl
-      run: |-
-        sudo snap install kubectl --channel=1.23/stable --classic
-        aws eks --region us-east-2 update-kubeconfig --name mrionline-global-live --alias eks-prod
+      - name: Install and configure kubectl
+        run: |-
+          sudo snap install kubectl --channel=1.23/stable --classic
+          aws eks --region us-east-2 update-kubeconfig --name mrionline-global-live --alias eks-prod
 
-    # install Tutor which we'll use for configuring and deploying Open edX
-    - name: Install Tutor
-      run: |-
-        sudo apt install python3 python3-pip libyaml-dev
-        pip install --upgrade pyyaml
-        echo "TUTOR_ROOT=$GITHUB_WORKSPACE/tutor" >> $GITHUB_ENV
-        pip install tutor
-      shell: bash
+      # install Tutor which we'll use for configuring and deploying Open edX
+      - name: Install Tutor
+        run: |-
+          sudo apt install python3 python3-pip libyaml-dev
+          pip install --upgrade pyyaml
+          echo "TUTOR_ROOT=$GITHUB_WORKSPACE/tutor" >> $GITHUB_ENV
+          pip install tutor
+        shell: bash
 
-    # This action.
-    - name: Enable tutor plugin - Credentials
-      uses: openedx-actions/tutor-enable-plugin-credentials@v0.0.1
-      if: ${{ env.ENABLE_CREDENTIALS == 'true' }}
-      with:
-        namespace: openedx-prod
-        aws-ecr-uri: 123456789012.dkr.ecr.us-east-2.amazonaws.com/openedx_credentials:latest
-        common-logo-url: https://www.edx.org/images/logos/edx-logo-elm.svg
+      # This action.
+      - name: Enable tutor plugin - Credentials
+        uses: openedx-actions/tutor-enable-plugin-credentials@v0.0.1
+        if: ${{ env.ENABLE_CREDENTIALS == 'true' }}
+        with:
+          namespace: openedx-prod
+          aws-ecr-uri: 123456789012.dkr.ecr.us-east-2.amazonaws.com/openedx_credentials:latest
+          common-logo-url: https://www.edx.org/images/logos/edx-logo-elm.svg
 ```
