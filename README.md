@@ -55,7 +55,7 @@ jobs:
 
     # This action.
       - name: Enable tutor plugin - Credentials
-        uses: openedx-actions/tutor-enable-plugin-credentials
+        uses: openedx-actions/tutor-enable-plugin-credentials@v0.0.1
         if: ${{ env.ENABLE_CREDENTIALS == 'true' }}
         with:
           namespace: openedx-prod
