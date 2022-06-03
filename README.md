@@ -40,6 +40,12 @@ jobs:
       - name: Configure Github workflow environment
         uses: openedx-actions/tutor-k8s-init@v0.0.1
 
+      # build the Credentials container
+      - name: Build the image and upload to AWS ECR
+        uses: openedx-actions/tutor-plugin-build-credentials@v0.1.1
+        with:
+          aws-ecr-repo: credentials
+
       # This action.
       - name: Enable tutor plugin - Credentials
         uses: openedx-actions/tutor-enable-plugin-credentials@v0.0.1
