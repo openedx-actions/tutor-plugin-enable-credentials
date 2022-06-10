@@ -47,6 +47,7 @@ runs:
     # IMPORTANT: you must run tutor_build_credentials first.
     - name: install credentials plugin
       id: install-plugin
+      shell: bash
       run: pip install git+https://github.com/lpm0073/tutor-contrib-credentials@v0.0.1
 
     - name: Enable and configure credentials plugin
