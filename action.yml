@@ -37,19 +37,22 @@ runs:
     #   CREDENTIALS_MYSQL_USERNAME=prod-credentials
     #   MYSQL_HOST=mrionline-global-live.cxtpn79fpu7n.us-east-2.rds.amazonaws.com
     #   MYSQL_PORT=3306
-    #
-    # Also note that we are using jq to add a prefix of "TUTOR_" to each of the parameter names
-    #
-    # see: https://github.com/Medality-Health/openedx_devops/blob/main/terraform/modules/mysql/main.tf
     - name: fetch MySQL configuration from Kubernetes secrets
-      run: |-
-        kubectl get secret mysql-credentials -n ${{ inputs.namespace }}  -o json | jq  '.data | map_values(@base64d)' | jq -r 'keys[] as $k | "\($k|ascii_upcase)=\(.[$k])"' >> $GITHUB_ENV
-      shell: bash
+      id: get-secret
+      uses: openedx-actions/tutor-k8s-get-secret@v0.0.2
+      with:
+        eks-namespace: ${{ inputs.namespace }}
+        eks-secret-name: mysql-credentials
 
     # IMPORTANT: you must run tutor_build_credentials first.
+    - name: install credentials plugin
+      id: install-plugin
+      run: pip install git+https://github.com/lpm0073/tutor-contrib-credentials@v0.0.1
+
     - name: Enable and configure credentials plugin
+      id: save-config
+      shell: bash
       run: |-
-        pip install git+https://github.com/lpm0073/tutor-contrib-credentials@v13.0.2
         tutor plugins enable credentials
         tutor config save --set CREDENTIALS_DOCKER_IMAGE=${{ inputs.aws-ecr-uri }} \
                           --set CREDENTIALS_MYSQL_PASSWORD=${CREDENTIALS_MYSQL_PASSWORD} \
@@ -72,4 +75,3 @@ runs:
                           --set CREDENTIALS_LOGO_WHITE_URL_PNG="${{ inputs.common-logo-url }}" \
                           --set CREDENTIALS_LOGO_WHITE_URL_SVG="" \
                           --set CREDENTIALS_FAVICON_URL="${{ inputs.common-logo-url }}" \
-      shell: bash

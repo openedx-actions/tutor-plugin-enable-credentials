@@ -48,7 +48,7 @@ jobs:
 
       # This action.
       - name: Enable tutor plugin - Credentials
-        uses: openedx-actions/tutor-enable-plugin-credentials@v0.0.1
+        uses: openedx-actions/tutor-enable-plugin-credentials@v0.0.4
         with:
           namespace: openedx-prod
           aws-ecr-uri: 123456789012.dkr.ecr.us-east-2.amazonaws.com/openedx_credentials:latest
