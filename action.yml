@@ -39,7 +39,7 @@ runs:
     #   MYSQL_PORT=3306
     - name: fetch MySQL configuration from Kubernetes secrets
       id: get-secret
-      uses: openedx-actions/tutor-k8s-get-secret@v0.0.7
+      uses: openedx-actions/tutor-k8s-get-secret@v1.0.0
       with:
         eks-namespace: ${{ inputs.namespace }}
         eks-secret-name: mysql-credentials
