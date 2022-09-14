@@ -19,10 +19,6 @@ inputs:
     description: 'Example: https://www.edx.org/images/logos/edx-logo-elm.svg'
     required: true
     type: string
-  lms-host-name:
-    description: 'Example: courses.myschool.edu'
-    required: true
-    type: string
 
 runs:
   using: "composite"
@@ -33,12 +29,12 @@ runs:
     # retrieve the MySQL connection parameters that we created in Terraform
     # and then stored in Kubernetes secrets. These include:
     #
-    #   CREDENTIALS_MYSQL_PASSWORD=pT@CeX8%Bwdj4kZm
+    #   CREDENTIALS_MYSQL_PASSWORD=******
     #   CREDENTIALS_MYSQL_USERNAME=prod-credentials
     #   MYSQL_HOST=mrionline-global-live.cxtpn79fpu7n.us-east-2.rds.amazonaws.com
     #   MYSQL_PORT=3306
     - name: fetch MySQL configuration from Kubernetes secrets
-      id: get-secret
+      id: get-mysql-secret
       uses: openedx-actions/tutor-k8s-get-secret@v1.0.0
       with:
         eks-namespace: ${{ inputs.namespace }}
@@ -48,7 +44,7 @@ runs:
     - name: install credentials plugin
       id: install-plugin
       shell: bash
-      run: pip install git+https://github.com/lpm0073/tutor-contrib-credentials@v0.0.1
+      run: pip install git+https://github.com/lpm0073/tutor-contrib-credentials
 
     - name: Enable and configure credentials plugin
       id: save-config
@@ -56,23 +52,5 @@ runs:
       run: |-
         tutor plugins enable credentials
         tutor config save --set CREDENTIALS_DOCKER_IMAGE=${{ inputs.aws-ecr-uri }} \
-                          --set CREDENTIALS_MYSQL_PASSWORD=${CREDENTIALS_MYSQL_PASSWORD} \
-                          --set CREDENTIALS_MYSQL_USERNAME=${CREDENTIALS_MYSQL_USERNAME} \
-                          --set CREDENTIALS_MYSQL_HOST=${MYSQL_HOST} \
-                          --set CREDENTIALS_MYSQL_PORT=${MYSQL_PORT} \
-                          --set CREDENTIALS_HOST="credentials.${{ inputs.lms-host-name }}" \
-                          --set CREDENTIALS_LMS_HOST=${{ inputs.lms-host-name }} \
-                          --set CREDENTIALS_LMS_URL_ROOT=${{ inputs.lms-host-name }} \
-                          --set CREDENTIALS_LMS_URL=${{ inputs.lms-host-name }} \
-                          --set CREDENTIALS_CATALOG_API_URL=${{ inputs.lms-host-name }} \
-                          --set CREDENTIALS_PRIVACY_POLICY_URL="${{ inputs.lms-host-name }}/pricacy-policy" \
-                          --set CREDENTIALS_SECRET_KEY="${OPENEDX_SECRET_KEY}" \
-                          --set CREDENTIALS_SITE_NAME="Your School" \
-                          --set CREDENTIALS_TOS_URL="${{ inputs.lms-host-name }}/tos" \
                           --set CREDENTIALS_LOGO_URL="${{ inputs.common-logo-url }}" \
-                          --set CREDENTIALS_LOGO_URL_PNG="${{ inputs.common-logo-url }}" \
-                          --set CREDENTIALS_LOGO_URL_SVG="" \
-                          --set CREDENTIALS_LOGO_WHITE_URL="${{ inputs.common-logo-url }}" \
-                          --set CREDENTIALS_LOGO_WHITE_URL_PNG="${{ inputs.common-logo-url }}" \
-                          --set CREDENTIALS_LOGO_WHITE_URL_SVG="" \
                           --set CREDENTIALS_FAVICON_URL="${{ inputs.common-logo-url }}" \
