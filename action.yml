@@ -7,6 +7,11 @@ branding:
   icon: 'cloud'
   color: 'orange'
 inputs:
+  version:
+    description: 'The version of the tutor plugin to install. Default: latest, which installs from the main branch.'
+    required: false
+    default: "latest"
+    type: string
   namespace:
     description: 'The Kubernetes namesapce to which the Open edX platform environment will be deployed. Example: openedx-prod'
     required: true
@@ -44,7 +49,7 @@ runs:
     - name: install credentials plugin
       id: install-plugin
       shell: bash
-      run: pip install git+https://github.com/lpm0073/tutor-contrib-credentials
+      run: pip install git+https://github.com/lpm0073/tutor-contrib-credentials${{ inputs.tutor-version != 'latest' && format('@{0}', inputs.tutor-version) || '' }}
 
     - name: Enable and configure credentials plugin
       id: save-config

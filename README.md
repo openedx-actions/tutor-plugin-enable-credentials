@@ -42,14 +42,16 @@ jobs:
 
       # build the Credentials container
       - name: Build the image and upload to AWS ECR
-        uses: openedx-actions/tutor-plugin-build-credentials@v0.1.1
+        uses: openedx-actions/tutor-plugin-build-credentials@v1.0.0
         with:
-          aws-ecr-repo: credentials
+          version: "latest"
+          aws-ecr-repo: openedx_credentials
 
       # This action.
       - name: Enable tutor plugin - Credentials
-        uses: openedx-actions/tutor-enable-plugin-credentials@v0.0.5
+        uses: openedx-actions/tutor-enable-plugin-credentials@v1.0.0
         with:
+          version: "latest"
           namespace: openedx-prod
           aws-ecr-uri: 123456789012.dkr.ecr.us-east-2.amazonaws.com/openedx_credentials:latest
           common-logo-url: https://www.edx.org/images/logos/edx-logo-elm.svg
