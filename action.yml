@@ -36,7 +36,7 @@ runs:
     #
     #   CREDENTIALS_MYSQL_PASSWORD=******
     #   CREDENTIALS_MYSQL_USERNAME=prod-credentials
-    #   MYSQL_HOST=mrionline-global-live.cxtpn79fpu7n.us-east-2.rds.amazonaws.com
+    #   MYSQL_HOST=mysql.service.yourschool.edu
     #   MYSQL_PORT=3306
     - name: fetch MySQL configuration from Kubernetes secrets
       id: get-mysql-secret
